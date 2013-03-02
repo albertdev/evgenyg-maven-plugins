@@ -105,6 +105,7 @@ final class CopyResource extends Resource implements Cloneable
      * Boolean flags that we need 3 states for: true, false, undefined
      */
     Boolean stripVersion
+    Boolean useFinalName
     Boolean verbose
     Boolean failIfNotFound
     Boolean failOnError

@@ -1,5 +1,6 @@
 package com.github.goldin.plugins.copy
 
+import static com.github.goldin.plugins.common.ConversionUtils.*
 import static com.github.goldin.plugins.common.GMojoUtils.*
 import com.github.goldin.gcommons.GCommons
 import com.github.goldin.gcommons.util.GroovyConfig
@@ -7,12 +8,15 @@ import com.github.goldin.plugins.common.BaseGroovyMojo
 import com.github.goldin.plugins.common.Replace
 import groovy.io.FileType
 import org.apache.maven.plugin.MojoExecutionException
+import org.apache.maven.model.building.*
+import org.apache.maven.model.resolution.ModelResolver;
 import org.apache.maven.project.MavenProjectHelper
 import org.apache.maven.shared.filtering.MavenFileFilter
 import org.codehaus.plexus.util.FileUtils
 import org.gcontracts.annotations.Ensures
 import org.gcontracts.annotations.Requires
 import org.jfrog.maven.annomojo.annotations.*
+import org.apache.maven.artifact.Artifact
 
 
 /**
@@ -34,6 +38,9 @@ class CopyMojo extends BaseGroovyMojo
     @MojoComponent ( role = 'org.apache.maven.shared.filtering.MavenFileFilter', roleHint = 'default' )
     public MavenFileFilter fileFilter
 
+    @Component
+    private ModelBuilder modelBuilder
+    
     /**
      * User-provided fields
      */
@@ -339,6 +346,23 @@ class CopyMojo extends BaseGroovyMojo
                     destFileName  = ( d.destFileName && ( d.destFileName != f.name )) ? d.destFileName : /* the one from <dependench> but not default one, set by Maven */
                                     ( destFileName )                                  ? destFileName   : /* the one from <resource> */
                                                                                         f.name
+                             
+                    if ( d.useFinalName || useFinalName )
+                    {
+                        Artifact pom = null
+                        // Resolve POM file
+                        d.artifact.with {
+                            pom = this.downloadArtifact(toMavenArtifact(groupId, artifactId, version, '', 'pom', '', false), verbose, failIfNotFound)
+                        }
+                        DefaultModelBuildingRequest request = new DefaultModelBuildingRequest()
+                        request.pomFile = pom.file
+                        def name = modelBuilder.build(request)?.effectiveModel?.build?.finalName
+                        if (name)
+                        {
+                            destFileName = name + '.' + fileBean().extension( f )
+                        }
+                    }
+
                     if ( d.stripVersion || isStripVersion )
                     {
                         if ( d.version.endsWith( '-SNAPSHOT' ))
