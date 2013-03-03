@@ -1,6 +1,5 @@
 package com.github.goldin.plugins.copy
 
-import static com.github.goldin.plugins.common.ConversionUtils.*
 import static com.github.goldin.plugins.common.GMojoUtils.*
 import com.github.goldin.gcommons.GCommons
 import com.github.goldin.gcommons.util.GroovyConfig
@@ -38,8 +37,8 @@ class CopyMojo extends BaseGroovyMojo
     @MojoComponent ( role = 'org.apache.maven.shared.filtering.MavenFileFilter', roleHint = 'default' )
     public MavenFileFilter fileFilter
 
-    @Component
-    private ModelBuilder modelBuilder
+    @MojoComponent 
+    public ModelBuilder modelBuilder
     
     /**
      * User-provided fields
@@ -357,7 +356,7 @@ class CopyMojo extends BaseGroovyMojo
                         def name = modelBuilder.build(request)?.effectiveModel?.build?.finalName
                         if (name)
                         {
-                            destFileName = name + (d.classifier ? "-${d.classifier}" : '') + '.' + fileBean().extension( f )
+                            destFileName = name + (d.classifier ? "-${d.classifier}" : '') + '.' + file().extension( f )
                         }
                     }
 

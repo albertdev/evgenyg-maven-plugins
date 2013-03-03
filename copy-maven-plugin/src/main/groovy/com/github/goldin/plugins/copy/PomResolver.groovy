@@ -1,7 +1,7 @@
 package com.github.goldin.plugins.copy
 
 import com.github.goldin.plugins.common.BaseGroovyMojo
-import com.github.goldin.plugins.common.ConversionUtils
+import com.github.goldin.plugins.common.GMojoUtils
 
 import org.apache.maven.model.resolution.ModelResolver
 import org.apache.maven.model.Repository
@@ -34,9 +34,9 @@ class PomResolver implements ModelResolver {
      * @return The source of the requested POM, never {@code null}.
      * @throws UnresolvableModelException If the POM could not be resolved from any configured repository.
      */
-    FileModelSource resolveModel( String groupId, String artifactId, String version ) throws UnresolvableModelException
+    ModelSource resolveModel( String groupId, String artifactId, String version ) throws UnresolvableModelException
     {
-        def artifact = baseMojo.downloadArtifact( ConversionUtils.toMavenArtifact(groupId, artifactId, version, '', 'pom', '', false), verbose, failIfNotFound)
+        def artifact = baseMojo.resolveArtifact( GMojoUtils.toMavenArtifact(groupId, artifactId, version, '', 'pom', '', false), verbose, failIfNotFound)
         new FileModelSource(artifact.file)
     }
 
@@ -48,7 +48,7 @@ class PomResolver implements ModelResolver {
      * @param repository The repository to add to the internal search chain, must not be {@code null}.
      * @throws InvalidRepositoryException If the repository could not be added (e.g. due to invalid URL or layout).
      */
-    void addRepository( Repository repository ) throws InvalidRepositoryException
+    void addRepository( Repository repository )
     {
         // This is ignored, we use the repos as grabbed from our Maven session in BaseGroovyMojo
     }
